@@ -7,13 +7,13 @@ import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.Encoders;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.RowFactory;
 import org.apache.spark.sql.SparkSession;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
+
 import scala.Tuple2;
 
 public class WordCount {
@@ -26,14 +26,18 @@ public class WordCount {
     }
 
     public void count() {
-        JavaRDD<String> textFile = jsc.textFile(".data/example-words.txt");
+        JavaRDD<String> textFile = jsc.textFile("data/example-words.txt");
 
         /**
          * Task: Modify this to clean the data- remove any junk, fix capitalisation
          */
 
         JavaPairRDD<String, Integer> counts = textFile
-                .flatMap(s -> Arrays.asList(s.split(" ")).iterator())
+                .flatMap((s) -> {
+                        s = s.replaceAll("[!,.]", "");
+                        s = s.toLowerCase();
+                        return Arrays.asList(s.split(" ")).iterator();
+                })
                 .mapToPair(word -> new Tuple2<>(word, 1))
                 .reduceByKey((a, b) -> a + b);
 
@@ -44,11 +48,10 @@ public class WordCount {
          * with the
          * follow schema with "word" and "count" columns
          */
-        //
 
         List<StructField> fields = Arrays.asList(
-                DataTypes.createStructField("word", DataTypes.StringType, true)
-
+                DataTypes.createStructField("word", DataTypes.StringType, true),
+                DataTypes.createStructField("count", DataTypes.IntegerType, true)
         );
 
         StructType schema = DataTypes.createStructType(fields);
@@ -57,16 +60,21 @@ public class WordCount {
                 .map(tuple -> RowFactory.create(tuple._1(), tuple._2()))
                 .collect();
 
-        Dataset<Row> df; //
-        // df.show();
+        Dataset<Row> df = spark.createDataFrame(rows, schema); 
+        df.show();
 
         /**
          * Task: Find and show the most frequent word
          */
+        Row highestCount = df.orderBy(df.col("count").desc()).first();
+        System.out.println("The most frequent word is: " + highestCount.getString(0) + " with a count of: " + highestCount.getInt(1));
 
         /**
          * Task: Count the total words beginning with "a"
          */
+
+        long count = df.filter(df.col("word").startsWith("a")).count();
+        System.out.println("count of words beginning with a: " + count);
 
     }
 

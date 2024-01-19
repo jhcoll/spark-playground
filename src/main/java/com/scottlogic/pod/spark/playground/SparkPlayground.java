@@ -1,5 +1,6 @@
 package com.scottlogic.pod.spark.playground;
 
+import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.SparkSession;
@@ -13,28 +14,48 @@ public class SparkPlayground {
         // Create a Spark session
         logger.info("Starting spark legend demo app");
 
+        SparkConf conf = new SparkConf()
+                .setAppName("SparkPlayground")
+                // .set("spark.dynamicAllocation.enabled", "true")
+                // .set("spark.executor.cores", "1")
+                // .set("spark.dynamicAllocation.minExecutors","1")
+                // .set("spark.dynamicAllocation.maxExecutors","16")
+                // .setMaster("spark://localhost:7077"); // Switch to this to run against a local cluster
+                .setMaster("local[*]");
+
         SparkSession spark = SparkSession.builder()
-                .appName("SparkPlayground")
-                .master("local[*]")
-                // .master("spark://localhost:7077") // Switch to this to run against a local cluster
+                .config(conf)
                 .enableHiveSupport()
                 .getOrCreate();
 
         SparkContext cs = spark.sparkContext();
-        JavaSparkContext jcs = new JavaSparkContext(cs);
+        JavaSparkContext jsc = new JavaSparkContext(cs);
 
         /*
          * Each of these can be uncommented to run them
          */
 
-        // NumberCount numberCount = new NumberCount(spark, jcs);
+        // NumberCount numberCount = new NumberCount(spark, jsc);
         // numberCount.count();
 
-        // WordCount wordCount = new WordCount(spark, jcs);
+        // FromJson fromJson = new FromJson(spark, jsc);
+        // fromJson.read();
+
+        // WordCount wordCount = new WordCount(spark, jsc);
         // wordCount.count();
 
-        // CSVReader csvReader = new CSVReader(spark, jcs);
+        // CSVReader csvReader = new CSVReader(spark, jsc);
         // csvReader.run();
+
+        // CSVtoXML csvtoXML = new CSVtoXML(spark, jsc);
+        // csvtoXML.run();
+
+        // StructuredStreamingUsage structuredStreamingUsage = new StructuredStreamingUsage(spark, jsc);
+        // try {
+        //     structuredStreamingUsage.run();
+        // } catch (Exception e) {
+        //     e.printStackTrace();
+        // }
 
         // // Stop the Spark session
         logger.info("Stopping spark legend demo app");
@@ -42,13 +63,13 @@ public class SparkPlayground {
         // keepAlive();
     }
 
-    private static void keepAlive() {
-        while (true) {
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-    }
+    // private static void keepAlive() {
+    //     while (true) {
+    //         try {
+    //             Thread.sleep(1000);
+    //         } catch (InterruptedException e) {
+    //             e.printStackTrace();
+    //         }
+    //     }
+    // }
 }
