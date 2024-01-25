@@ -1,0 +1,32 @@
+This is a WordCount test suite
+
+!contents -R2 -g -p -f -h
+
+
+!path ${java.class.path}
+!define TEST_SYSTEM {slim}
+!define COLLAPSE_SETUP {true}
+!define COLLAPSE_TEARDOWN {true}
+
+|import|
+|com.scottlogic.pod.spark.playground|
+
+# |import|
+# |com.scottlogic.pod.spark.playground.SparkExample|
+# |script|SetUp|
+
+# |import|
+# |com.scottlogic.pod.spark.playground.SparkExampleSetUp|
+# |script|setYourCsvFilePath|
+# |set setYourCsvFilePath|./data/people-100000.csv|
+
+|import|
+|com.scottlogic.pod.spark.playground.fitnesse.fixtures|
+|WordCountFixtureTest.execute|
+|Test Name                    |CSV File Path          |Expected Result|
+|Process Data with Valid Input|	./data/people-100000.csv|1|
+|Process Data with Empty Input|resources/empty-file.csv|ExpectedResult2|
+|Process Data with Invalid Input|resources/invalid-data.csv|ExpectedResult3|
+
+
+
